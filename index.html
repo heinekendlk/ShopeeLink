@@ -503,10 +503,11 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        const API_URL = '/';
+        // ========== Config ==========
+        const API_URL = https://shopee-affiliate-api-ymtu.onrender.com;
 
         // ========== Toast Notification ==========
         function showToast(message, type = 'success') {
@@ -546,14 +547,18 @@
         document.getElementById('pasteBtn').addEventListener('click', () => {
             if (navigator.clipboard) {
                 navigator.clipboard.readText().then(text => {
-                    document.getElementById('linkInput').value = text.trim();
-                    showToast('✅ Đã dán link');
-                    document.getElementById('linkInput').focus();
+                    if (text.trim()) {
+                        document.getElementById('linkInput').value = text.trim();
+                        showToast('✅ Đã dán link');
+                        document.getElementById('linkInput').focus();
+                    }
                 }).catch(() => {
                     showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+                    document.getElementById('linkInput').focus();
                 });
             } else {
                 showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+                document.getElementById('linkInput').focus();
             }
         });
 
@@ -570,28 +575,57 @@
                 return;
             }
 
+            console.log('📤 Submitting link:', link);
+            console.log('📡 API URL:', `${API_URL}/create-link`);
+
             // Loading state
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('btnText').textContent = 'Đang xử lý...';
-            document.getElementById('spinner').classList.add('show');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+
+            submitBtn.disabled = true;
+            btnText.textContent = 'Đang xử lý...';
+            spinner.classList.add('show');
             document.getElementById('alertBox').style.display = 'none';
             document.getElementById('resultsSection').classList.remove('show');
             document.getElementById('emptyState').style.display = 'block';
 
             try {
-                // API Call
-                const response = await fetch(
-                    `/create-link?origin_link=${encodeURIComponent(link)}`,
-                    { method: 'POST' }
-                );
+                // ========== API Call ==========
+                const url = `${API_URL}/create-link?origin_link=${encodeURIComponent(link)}`;
+                console.log('🌐 Fetching:', url);
 
-                const data = await response.json();
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Có lỗi xảy ra');
+                console.log('📥 Response status:', response.status);
+                console.log('📥 Response headers:', response.headers);
+
+                // Get response text first (for debugging)
+                const responseText = await response.text();
+                console.log('📝 Response text:', responseText.substring(0, 200));
+
+                // Try to parse JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('❌ JSON parse error:', parseError);
+                    throw new Error('Invalid response format from server');
                 }
 
-                // Display Results
+                console.log('✅ Response data:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.detail || `HTTP ${response.status}`);
+                }
+
+                // ========== Display Results ==========
                 let html = `
                     <div class="result-box">
                         <div class="result-title">
@@ -656,19 +690,26 @@
                 showToast(`✅ ${data.message}`);
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('❌ Error:', error);
+                console.error('Error message:', error.message);
+                
                 document.getElementById('alertText').textContent = error.message;
                 document.getElementById('alertBox').style.display = 'flex';
                 showToast(error.message, 'error');
             } finally {
-                document.getElementById('submitBtn').disabled = false;
-                document.getElementById('btnText').textContent = 'Tạo Link Ngay';
-                document.getElementById('spinner').classList.remove('show');
+                submitBtn.disabled = false;
+                btnText.textContent = 'Tạo Link Ngay';
+                spinner.classList.remove('show');
             }
         });
 
-        // Auto focus input
-        document.getElementById('linkInput').focus();
+        // ========== Auto focus ==========
+        window.addEventListener('load', () => {
+            document.getElementById('linkInput').focus();
+            console.log('✅ App loaded and focused');
+        });
+
+        console.log('✅ Script loaded successfully');
     </script>
 </body>
 
