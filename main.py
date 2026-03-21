@@ -1,35 +1,24 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from urllib.parse import quote, unquote
+from urllib.parse import quote
 import re
 import aiohttp
-import os
-from dotenv import load_dotenv
-import asyncio
 import logging
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-load_dotenv()
+# ========== APP ==========
+app = FastAPI(title="Shopee Affiliate API", version="1.0.0")
 
-# ========== APP SETUP ==========
-app = FastAPI(
-    title="Shopee Affiliate Link Generator",
-    version="1.0.0",
-    description="Convert Shopee links to affiliate links"
-)
-
-# ========== CORS - Allow All ==========
+# ========== CORS ==========
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 # ========== Constants ==========
@@ -37,10 +26,7 @@ AFFILIATE_ID = "17323090153"
 SUB_ID = "addlivetag-ductoan"
 SHARE_CHANNEL = "4"
 
-logger.info("=" * 60)
-logger.info("🚀 Shopee Affiliate API Started")
-logger.info(f"Affiliate ID: {AFFILIATE_ID}")
-logger.info("=" * 60)
+logger.info("✅ Shopee Affiliate API Started")
 
 # ========== HELPER FUNCTIONS ==========
 
@@ -57,7 +43,7 @@ def is_short_link(url: str) -> bool:
 
 
 async def decode_short_link(short_url: str) -> str:
-    """Decode short link to get origin link"""
+    """Decode short link"""
     try:
         logger.info(f"🔍 Decoding: {short_url}")
         
@@ -69,21 +55,20 @@ async def decode_short_link(short_url: str) -> str:
                 short_url,
                 allow_redirects=True,
                 timeout=aiohttp.ClientTimeout(total=15),
-                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                headers={'User-Agent': 'Mozilla/5.0'}
             ) as response:
                 final_url = str(response.url)
-                logger.info(f"✅ Decoded to: {final_url}")
+                logger.info(f"✅ Decoded: {final_url}")
                 return final_url
         finally:
             await session.close()
-            
     except Exception as e:
         logger.error(f"❌ Decode error: {e}")
         return None
 
 
 def create_affiliate_link(origin_url: str) -> str:
-    """Create affiliate link from origin URL"""
+    """Create affiliate link"""
     encoded = quote(origin_url, safe='')
     return (
         f"https://s.shopee.vn/an_redir?"
@@ -94,165 +79,104 @@ def create_affiliate_link(origin_url: str) -> str:
     )
 
 
-# ========== ROOT ENDPOINT ==========
+# ========== ROUTES ==========
+
 @app.get("/")
 async def root():
     """Root endpoint"""
-    logger.info("GET / - Root")
+    logger.info("GET /")
     return {
-        "message": "Shopee Affiliate API",
-        "version": "1.0.0",
-        "status": "running"
+        "message": "Shopee Affiliate API v1.0.0",
+        "status": "running",
+        "endpoints": ["/health", "/create-link"]
     }
 
 
-# ========== HEALTH CHECK ==========
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
-    logger.info("GET /health - Health check")
-    return {
-        "status": "ok",
-        "version": "1.0.0",
-        "service": "Shopee Affiliate Link Generator"
-    }
+    """Health check"""
+    logger.info("GET /health")
+    return {"status": "ok", "version": "1.0.0"}
 
 
-# ========== MAIN ENDPOINT - CREATE LINK ==========
 @app.post("/create-link")
 async def create_link(origin_link: str = Query(...)):
-    """
-    POST /create-link
+    """Create affiliate link"""
     
-    Query Parameters:
-    - origin_link: Shopee URL (short or normal)
-    
-    Returns:
-    {
-        "success": true,
-        "message": "...",
-        "affiliateLink": "...",
-        "originLink": "...",
-        ...
-    }
-    """
-    
-    logger.info("=" * 60)
-    logger.info("📥 POST /create-link called")
+    logger.info(f"POST /create-link - Input: {origin_link}")
     
     try:
-        # ========== Validate Input ==========
+        # Validate
         if not origin_link or not origin_link.strip():
-            logger.warning("❌ Empty link received")
             return JSONResponse(
                 status_code=400,
                 content={"detail": "Link không được để trống"}
             )
         
         origin_link = origin_link.strip()
-        logger.info(f"📝 Input: {origin_link}")
         
-        # ========== Check Shopee URL ==========
+        # Check Shopee
         if not is_shopee_url(origin_link):
-            logger.warning(f"❌ Not a Shopee URL: {origin_link}")
             return JSONResponse(
                 status_code=400,
                 content={"detail": "Link phải từ Shopee"}
             )
         
-        logger.info("✅ Valid Shopee URL")
-        
-        # ========== Variables ==========
         decoded_from_short = False
         final_origin_link = origin_link
-        input_link = origin_link
         
-        # ========== Decode Short Link if Needed ==========
+        # Decode if short link
         if is_short_link(origin_link):
-            logger.info("🔄 Short link detected - decoding...")
             decoded_from_short = True
-            
             decoded = await decode_short_link(origin_link)
             
             if not decoded:
-                logger.error("❌ Failed to decode")
                 return JSONResponse(
                     status_code=400,
                     content={"detail": "Không thể giải mã short link"}
                 )
             
-            if not is_shopee_url(decoded):
-                logger.error(f"❌ Decoded URL not Shopee: {decoded}")
-                return JSONResponse(
-                    status_code=400,
-                    content={"detail": "Link giải mã không hợp lệ"}
-                )
-            
             final_origin_link = decoded
-            logger.info(f"✅ Decoded successfully")
         
-        logger.info(f"✅ Final origin link: {final_origin_link}")
-        
-        # ========== Create Affiliate Link ==========
-        logger.info("🔗 Creating affiliate link...")
+        # Create affiliate link
         affiliate_link = create_affiliate_link(final_origin_link)
-        logger.info(f"✅ Affiliate link created")
         
-        # ========== Prepare Response ==========
-        response_data = {
-            "success": True,
-            "message": "Tạo link thành công" + (" (giải mã từ short link)" if decoded_from_short else ""),
-            "affiliateLink": affiliate_link,
-            "originLink": final_origin_link,
-            "inputLink": input_link,
-            "decodedFromShort": decoded_from_short,
-            "affiliateId": AFFILIATE_ID,
-            "subId": SUB_ID,
-            "shareChannelCode": SHARE_CHANNEL
-        }
-        
-        logger.info("✅ Response prepared")
-        logger.info("=" * 60)
+        logger.info(f"✅ Success - Created affiliate link")
         
         return JSONResponse(
             status_code=200,
-            content=response_data,
-            headers={"Content-Type": "application/json; charset=utf-8"}
+            content={
+                "success": True,
+                "message": "Tạo link thành công" + (" (giải mã từ short link)" if decoded_from_short else ""),
+                "affiliateLink": affiliate_link,
+                "originLink": final_origin_link,
+                "inputLink": origin_link,
+                "decodedFromShort": decoded_from_short,
+                "affiliateId": AFFILIATE_ID,
+                "subId": SUB_ID,
+                "shareChannelCode": SHARE_CHANNEL
+            }
         )
         
     except Exception as e:
-        logger.error(f"❌ Error: {e}", exc_info=True)
-        logger.info("=" * 60)
-        
+        logger.error(f"❌ Error: {e}")
         return JSONResponse(
             status_code=500,
-            content={"detail": f"Lỗi server: {str(e)}"}
+            content={"detail": f"Lỗi: {str(e)}"}
         )
 
 
-# ========== CATCH-ALL OPTIONS (CORS Preflight) ==========
-@app.options("/{path:path}")
-async def options_handler(path: str):
+# ========== CORS Preflight ==========
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
     """Handle CORS preflight"""
-    logger.info(f"OPTIONS /{path}")
+    logger.info(f"OPTIONS /{full_path}")
     return JSONResponse(
         status_code=200,
-        content={"message": "OK"},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
+        content={"message": "OK"}
     )
 
 
 if __name__ == "__main__":
     import uvicorn
-    
-    logger.info("Starting Uvicorn server...")
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
