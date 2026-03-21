@@ -871,93 +871,347 @@
     </div>
 
     <!-- Scripts -->
+    <!-- Chỉ thay thế phần script cuối -->
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
     <script>
+        // ========== Toast Notification - ĐỊNH NGHĨA TRƯỚC ==========
+        function showToast(message, type = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+        }
+
+        // ========== Copy to Clipboard Function ==========
+        function copyToClipboard(text) {
+            if (!text) {
+                showToast('Không có nội dung để copy', 'warning');
+                return;
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast('✅ Đã copy vào clipboard!'))
+                    .catch(() => showToast('❌ Copy thất bại', 'error'));
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy') 
+                        ? showToast('✅ Đã copy vào clipboard!')
+                        : showToast('❌ Copy thất bại', 'error');
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+        }
+
         // ========== Configuration ==========
-let API_URL = '';
+        let API_URL = '';
 
-// ========== Initialize App ==========
-async function initializeApp() {
-    try {
-        console.log('🔄 Initializing app...');
-        console.log('📍 Current location:', window.location.href);
-        
-        // Thử fetch /config
-        console.log('🌐 Fetching /config endpoint...');
-        
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-        
-        const response = await fetch('/config', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            },
-            signal: controller.signal
+        // ========== Initialize App ==========
+        async function initializeApp() {
+            try {
+                console.log('🔄 Initializing app...');
+                console.log('📍 Current location:', window.location.href);
+                
+                // Thử fetch /config
+                console.log('🌐 Fetching /config endpoint...');
+                
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                
+                const response = await fetch('/config', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeout);
+                
+                console.log('📡 Response received');
+                console.log('Status:', response.status);
+                console.log('Content-Type:', response.headers.get('content-type'));
+                
+                // Nếu status không OK
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Get response text
+                const responseText = await response.text();
+                console.log('📝 Response text length:', responseText.length);
+                console.log('📝 First 200 chars:', responseText.substring(0, 200));
+                
+                // Try to parse JSON
+                let config;
+                try {
+                    config = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('❌ JSON Parse Error:', parseError.message);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
+                
+                // Validate config
+                if (!config.apiUrl) {
+                    throw new Error('Config missing apiUrl');
+                }
+                
+                API_URL = config.apiUrl;
+                
+                console.log('✅ App initialized successfully!');
+                console.log('📡 API_URL:', API_URL);
+                console.log('📡 Version:', config.version);
+                console.log('✨ Ready to use!');
+                
+                // Show success toast
+                showToast('✅ App Ready!', 'success');
+                
+            } catch (error) {
+                console.error('❌ Initialization Error:', error.message);
+                console.error('Error details:', error);
+                
+                // Fallback to same origin
+                API_URL = window.location.origin;
+                console.log('🔄 Fallback to same origin:', API_URL);
+                
+                // Show warning toast
+                showToast('⚠️ Using fallback API URL', 'warning');
+            }
+        }
+
+        // ========== Paste from Clipboard ==========
+        function setupPasteButton() {
+            $('#pasteBtn').on('click', function() {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.readText()
+                        .then(text => {
+                            if (text.trim()) {
+                                $('#shopeeUrl').val(text.trim());
+                                showToast('✅ Đã dán link từ clipboard');
+                                $('#shopeeUrl').focus();
+                            }
+                        })
+                        .catch(() => {
+                            $('#shopeeUrl').focus();
+                            showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+                        });
+                } else {
+                    $('#shopeeUrl').focus();
+                    showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+                }
+            });
+        }
+
+        // ========== Form Submit Handler ==========
+        function setupFormSubmit() {
+            $('#linkForm').on('submit', async function(e) {
+                e.preventDefault();
+
+                const shopeeUrl = $('#shopeeUrl').val().trim();
+
+                // ========== Validation ==========
+                if (!shopeeUrl) {
+                    showToast('❌ Vui lòng nhập link Shopee', 'warning');
+                    $('#shopeeUrl').focus();
+                    return;
+                }
+
+                // Kiểm tra API_URL đã được load chưa
+                if (!API_URL) {
+                    showToast('❌ Config chưa được load, vui lòng F5 để tải lại trang', 'error');
+                    return;
+                }
+
+                // ========== Loading State ==========
+                $('#submitBtn').prop('disabled', true);
+                $('#btnText').text('Đang xử lý...');
+                $('.spinner-border-custom').addClass('show');
+                $('#errorAlert').hide();
+                $('#resultsSection').removeClass('show');
+                $('#emptyState').show();
+
+                try {
+                    // ========== API Call ==========
+                    console.log('📤 Sending request to:', `${API_URL}/create-link`);
+                    console.log('📋 With origin_link:', shopeeUrl);
+                    
+                    const response = await fetch(
+                        `${API_URL}/create-link?origin_link=${encodeURIComponent(shopeeUrl)}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                            }
+                        }
+                    );
+
+                    console.log('📥 Response status:', response.status);
+                    
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Có lỗi xảy ra');
+                    }
+
+                    console.log('✅ Success response:', data);
+
+                    // ========== Display Results ==========
+                    let html = `
+                        <div class="link-box">
+                            <div class="link-box-header">
+                                <strong>
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                    ✅ Link Affiliate Mới
+                                </strong>
+                            </div>
+                    `;
+
+                    // Hiển thị nếu giải mã từ short link
+                    if (data.decodedFromShortLink) {
+                        html += `
+                            <div class="link-info" style="border-left-color: #2196F3;">
+                                <strong style="color: #2196F3;">
+                                    <i class="fas fa-sync-alt"></i> Bước 1: Giải Mã Short Link
+                                </strong>
+                                <div style="margin-top: 0.75rem;">
+                                    <small style="color: #666; display: block; margin-bottom: 0.35rem;">📥 Input (Short Link):</small>
+                                    <code>${data.originalInput}</code>
+                                </div>
+                                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0;">
+                                    <small style="color: #2196F3; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                                        <i class="fas fa-arrow-down"></i> Kết Quả Giải Mã
+                                    </small>
+                                    <small style="color: #666; display: block; margin-bottom: 0.35rem;">📌 Link Gốc:</small>
+                                    <code>${data.originLink}</code>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Hiển thị Link Affiliate Mới
+                    html += `
+                            <div class="link-info" style="border-left-color: var(--success); background: #f0fdf4;">
+                                <strong style="color: var(--success);">
+                                    <i class="fas fa-link"></i> Bước ${data.decodedFromShortLink ? '2' : '1'}: Link Affiliate Mới
+                                </strong>
+                                <div class="link-content" id="affiliateLinkContent">${data.affiliateLink}</div>
+                            </div>
+
+                            <div class="params-info">
+                                <strong>
+                                    <i class="fas fa-cogs"></i> Tham Số Sử Dụng
+                                </strong>
+                                <div class="params-row">
+                                    <span class="params-label">🔑 Affiliate ID:</span>
+                                    <span class="params-value">${data.affiliateId}</span>
+                                </div>
+                                <div class="params-row">
+                                    <span class="params-label">📌 Sub ID:</span>
+                                    <span class="params-value">${data.subId}</span>
+                                </div>
+                                <div class="params-row">
+                                    <span class="params-label">📡 Share Channel:</span>
+                                    <span class="params-value">${data.shareChannelCode}</span>
+                                </div>
+                            </div>
+
+                            <div class="link-box-actions">
+                                <button type="button" class="copy-btn" onclick="copyToClipboard('${data.affiliateLink}')">
+                                    <i class="fas fa-copy"></i> Copy Link
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    $('#linksContainer').html(html);
+                    $('#emptyState').hide();
+                    $('#resultsSection').addClass('show');
+                    
+                    // Update buttons
+                    $('#buyBtn').attr('href', data.affiliateLink);
+                    $('#shareBtn').attr('href', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(data.affiliateLink)}`);
+
+                    showToast(`✅ ${data.message}`);
+
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    
+                    $('#errorMessage').html(`
+                        <strong><i class="fas fa-exclamation-circle"></i> ${error.message}</strong>
+                    `);
+                    $('#errorAlert').show();
+                    
+                    showToast(error.message, 'error');
+                } finally {
+                    $('#submitBtn').prop('disabled', false);
+                    $('#btnText').text('Tạo Link Ngay');
+                    $('.spinner-border-custom').removeClass('show');
+                }
+            });
+        }
+
+        // ========== Keyboard Shortcut ==========
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(event) {
+                // Alt + Enter để submit form
+                if (event.altKey && event.key === 'Enter') {
+                    $('#linkForm').submit();
+                }
+            });
+        }
+
+        // ========== Wait for jQuery and Sweetalert2 ==========
+        function waitForDependencies() {
+            if (typeof $ === 'undefined' || typeof Swal === 'undefined') {
+                console.log('⏳ Waiting for dependencies...');
+                setTimeout(waitForDependencies, 100);
+                return;
+            }
+
+            console.log('✅ jQuery loaded:', typeof $);
+            console.log('✅ Sweetalert2 loaded:', typeof Swal);
+
+            // Setup all handlers
+            setupPasteButton();
+            setupFormSubmit();
+            setupKeyboardShortcuts();
+
+            console.log('✅ All handlers setup complete');
+        }
+
+        // ========== Main Initialization ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOMContentLoaded fired');
+            
+            // Wait for jQuery and Sweetalert2 to load
+            waitForDependencies();
+
+            // Initialize app config
+            setTimeout(initializeApp, 100);
+
+            // Auto focus input
+            setTimeout(() => {
+                $('#shopeeUrl').focus();
+            }, 500);
         });
-        
-        clearTimeout(timeout);
-        
-        console.log('📡 Response received');
-        console.log('Status:', response.status);
-        console.log('Content-Type:', response.headers.get('content-type'));
-        
-        // Nếu status không OK
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        // Get response text
-        const responseText = await response.text();
-        console.log('📝 Response text length:', responseText.length);
-        console.log('📝 First 200 chars:', responseText.substring(0, 200));
-        
-        // Try to parse JSON
-        let config;
-        try {
-            config = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('❌ JSON Parse Error:', parseError.message);
-            console.error('Response text:', responseText);
-            throw new Error('Invalid JSON response from server');
-        }
-        
-        // Validate config
-        if (!config.apiUrl) {
-            throw new Error('Config missing apiUrl');
-        }
-        
-        API_URL = config.apiUrl;
-        
-        console.log('✅ App initialized successfully!');
-        console.log('📡 API_URL:', API_URL);
-        console.log('📡 Version:', config.version);
-        console.log('✨ Ready to use!');
-        
-        // Optional: show success toast
-        showToast('✅ App Ready!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Initialization Error:', error.message);
-        console.error('Error details:', error);
-        
-        // Fallback to same origin
-        API_URL = window.location.origin;
-        console.log('🔄 Fallback to same origin:', API_URL);
-        
-        // Show warning toast
-        showToast('⚠️ Using fallback API URL', 'warning');
-    }
-}
-
-// Khởi tạo app khi trang load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
-}
     </script>
 </body>
 
