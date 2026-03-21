@@ -177,7 +177,7 @@ def create_affiliate_link(origin_link: str) -> str:
 
 
 # ========== CREATE LINK ENDPOINT ==========
-@app.post("/create-link")
+@app.get("/create-link")
 async def create_link(origin_link: str = Query(...)):
     """
     POST /create-link - Tạo affiliate link
