@@ -90,7 +90,7 @@ def create_affiliate_link(origin_link: str) -> str:
 
 # ============ API Endpoints ============
 
-@app.post("/create-link")
+@app.get("/create-link")
 async def create_link(origin_link: str = Query(..., description="Link Shopee từ form")):
     """
     Tạo affiliate link từ Shopee URL
