@@ -1,111 +1,1111 @@
-<!-- Chỉ cập nhật phần script form submit -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tạo Link Shopee Affiliate - s.shopee.vn</title>
+    <meta name="description" content="Công cụ tạo link Shopee affiliate nhanh chóng, dễ dàng">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-<script>
-    // ========== Form Submit ==========
-    $('#linkForm').on('submit', async function(e) {
-        e.preventDefault();
-
-        const shopeeUrl = $('#shopeeUrl').val().trim();
-
-        if (!shopeeUrl) {
-            showToast('❌ Vui lòng nhập link Shopee', 'warning');
-            $('#shopeeUrl').focus();
-            return;
+    <style>
+        :root {
+            --primary: #ee4d2d;
+            --secondary: #ff6b35;
+            --success: #26de81;
+            --info: #4b7bec;
+            --danger: #fc5a55;
+            --dark: #2f3542;
+            --light: #f8f9fa;
         }
 
-        if (!API_URL) {
-            showToast('❌ Config chưa được load', 'error');
-            return;
+        * {
+            -webkit-tap-highlight-color: transparent;
         }
 
-        $('#submitBtn').prop('disabled', true);
-        $('#btnText').text('Đang xử lý...');
-        $('.spinner-border-custom').addClass('show');
-        $('#errorAlert').hide();
-        $('#resultsSection').removeClass('show');
-        $('#emptyState').show();
+        html, body {
+            height: 100%;
+        }
 
-        try {
-            const response = await fetch(
-                `${API_URL}/create-link?origin_link=${encodeURIComponent(shopeeUrl)}`
-            );
+        body {
+            background: linear-gradient(135deg, rgb(255, 190, 166) 0%, rgb(255, 225, 219) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+        }
 
-            const data = await response.json();
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-            if (!response.ok) {
-                throw new Error(data.detail || 'Có lỗi xảy ra');
+        /* ========== Header ========== */
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .domain-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            border: 2px solid rgba(238, 77, 45, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ========== Content Grid ========== */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 3rem;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
-            // ========== Display Results ==========
-            let html = `
-                <div class="link-box">
-                    <div class="link-box-header">
-                        <strong>
-                            <i class="fas fa-check-circle text-success"></i>
-                            ✅ Tạo Link Thành Công
-                        </strong>
-                    </div>
-            `;
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
 
-            // ========== Hiển thị nếu giải mã từ short link ==========
-            if (data.decodedFromShortLink) {
-                html += `
-                    <div class="link-info" style="background: #e3f2fd; border-left-color: #2196F3; margin-bottom: 1rem;">
-                        <strong style="color: #2196F3;">
-                            <i class="fas fa-sync-alt"></i> Bước 1: Giải Mã Short Link
-                        </strong><br>
-                        <small style="color: #666;">Input:</small><br>
-                        <code style="word-break: break-all; font-size: 0.7rem; display: block; background: white; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.25rem;">
-                            ${data.originalInput}
-                        </code>
-                        
-                        <small style="color: #2196F3; display: block; margin-top: 0.75rem;">
-                            <i class="fas fa-arrow-down"></i> ↓ Kết Quả Giải Mã ↓
-                        </small>
-                        <small style="color: #666;">Link Gốc:</small><br>
-                        <code style="word-break: break-all; font-size: 0.7rem; display: block; background: white; padding: 0.5rem; border-radius: 0.25rem; margin-top: 0.25rem;">
-                            ${data.originLink}
-                        </code>
-                    </div>
-                `;
+        /* ========== Card Styles ========== */
+        .card-custom {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.75rem;
+            border-bottom: none;
+        }
+
+        .card-header-custom h5 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-body-custom {
+            padding: 1.75rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========== Form Styles ========== */
+        .form-group-custom {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group-custom:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label-custom {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label-custom i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .input-group-custom {
+            position: relative;
+            display: flex;
+            gap: 0;
+        }
+
+        .form-control-custom {
+            border: 2px solid #e9ecef;
+            border-radius: 0.75rem 0 0 0.75rem;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+            flex: 1;
+            outline: none;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.1);
+        }
+
+        .form-control-custom::placeholder {
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+        .paste-btn {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-left: none;
+            border-radius: 0 0.75rem 0.75rem 0;
+            padding: 0 1.25rem;
+            cursor: pointer;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .paste-btn:hover {
+            background: var(--light);
+            border-color: var(--primary);
+            color: var(--secondary);
+        }
+
+        .paste-btn:active {
+            transform: scale(0.95);
+        }
+
+        .hint-text {
+            display: block;
+            margin-top: 0.75rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .hint-text strong {
+            color: var(--primary);
+        }
+
+        /* ========== Button Styles ========== */
+        .btn-custom {
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(238, 77, 45, 0.3);
+        }
+
+        .btn-primary-custom:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(238, 77, 45, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-primary-custom:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            text-decoration: none;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success-action {
+            background: linear-gradient(135deg, var(--success), #20bf6b);
+            box-shadow: 0 5px 15px rgba(38, 222, 129, 0.3);
+        }
+
+        .btn-success-action:hover {
+            box-shadow: 0 8px 20px rgba(38, 222, 129, 0.4);
+        }
+
+        .btn-info-action {
+            background: linear-gradient(135deg, var(--info), #3867d6);
+            box-shadow: 0 5px 15px rgba(75, 123, 236, 0.3);
+        }
+
+        .btn-info-action:hover {
+            box-shadow: 0 8px 20px rgba(75, 123, 236, 0.4);
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 3px 10px rgba(238, 77, 45, 0.2);
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 77, 45, 0.3);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ========== Results Section ========== */
+        .results-section {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-box {
+            background: white;
+            border-left: 4px solid var(--primary);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .link-box:last-child {
+            margin-bottom: 0;
+        }
+
+        .link-box:hover {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+            transform: translateX(3px);
+        }
+
+        .link-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .link-box-header strong {
+            color: var(--dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-info {
+            background: #f8f9fb;
+            border-left: 4px solid var(--info);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .link-info strong {
+            color: var(--info);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .link-info code {
+            background: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.35rem;
+            word-break: break-all;
+            font-size: 0.75rem;
+            display: block;
+            margin-top: 0.5rem;
+            border: 1px solid #e9ecef;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .link-content {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            word-break: break-all;
+            font-size: 0.75rem;
+            color: #495057;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #e9ecef;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .link-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .link-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .link-content::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        .link-content::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        .link-box-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .params-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid var(--dark);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .params-info strong {
+            color: var(--dark);
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .params-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            gap: 0.75rem;
+        }
+
+        .params-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .params-label {
+            color: #6c757d;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .params-value {
+            background: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #dee2e6;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        /* ========== Alert Styles ========== */
+        .alert-custom {
+            border-radius: 0.75rem;
+            border: none;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-danger-custom {
+            background: #fff5f5;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-danger-custom strong {
+            color: var(--danger);
+        }
+
+        .alert-success-custom {
+            background: #f0fdf4;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        /* ========== Instructions Section ========== */
+        .instructions-box {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--info);
+        }
+
+        .instructions-box h6 {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instructions-box ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .instructions-box li {
+            margin-bottom: 0.75rem;
+            color: #495057;
+            line-height: 1.7;
+        }
+
+        .instructions-box li strong {
+            color: var(--primary);
+        }
+
+        .instructions-box ul {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .instructions-box ul li {
+            margin-bottom: 0.35rem;
+            font-size: 0.9rem;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), #20bf6b);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        /* ========== Empty State ========== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 3.5rem;
+            color: #dee2e6;
+            margin-bottom: 1.25rem;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .empty-state p strong {
+            color: var(--dark);
+        }
+
+        /* ========== Loading Spinner ========== */
+        .spinner-border-custom {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        .spinner-border-custom.show {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========== Footer ========== */
+        .footer {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 576px) {
+            .header {
+                padding: 1.5rem 0;
+                margin-bottom: 1.5rem;
             }
 
-            // ========== Hiển thị Link Affiliate Mới ==========
-            html += `
-                    <div class="link-info" style="background: #f0fdf4; border-left-color: #26de81;">
-                        <strong style="color: #26de81;">
-                            <i class="fas fa-link"></i> Bước ${data.decodedFromShortLink ? '2' : '1'}: Link Affiliate Mới
-                        </strong><br>
-                        <code style="word-break: break-all; font-size: 0.7rem; background: white; padding: 0.5rem; display: block; border-radius: 0.25rem; margin-top: 0.5rem;">
-                            ${data.affiliateLink}
-                        </code>
-                    </div>
+            .header h1 {
+                font-size: 1.5rem;
+            }
 
-                    <div class="link-box-actions" style="margin-top: 1rem;">
-                        <button type="button" class="copy-btn" onclick="copyToClipboard('${data.affiliateLink}')" style="flex: 1;">
-                            <i class="fas fa-copy"></i> Copy Link
-                        </button>
+            .card-header-custom {
+                padding: 1.25rem;
+            }
+
+            .card-body-custom {
+                padding: 1.25rem;
+            }
+
+            .btn-custom {
+                font-size: 0.85rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .action-buttons {
+                gap: 0.5rem;
+            }
+
+            .btn-action {
+                min-width: 100px;
+                font-size: 0.75rem;
+                padding: 0.65rem 0.75rem;
+            }
+
+            .link-box {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-link"></i> Tạo Link Shopee Affiliate
+            </h1>
+            <p>Chuyển đổi link Shopee thành link kiếm tiền với redirect s.shopee.vn</p>
+            <div class="domain-badge">
+                <i class="fas fa-globe"></i> s.shopee.vn/an_redir
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Left Panel - Form Input -->
+            <div class="left-panel">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-cog"></i> Tạo Link Affiliate
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <form id="linkForm">
+                            <!-- Shopee URL Input -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="fas fa-shopping-bag"></i> Link Shopee
+                                </label>
+                                <div class="input-group-custom">
+                                    <input 
+                                        type="url" 
+                                        class="form-control-custom" 
+                                        id="shopeeUrl"
+                                        placeholder="Dán link Shopee vào đây..."
+                                        required
+                                        autocomplete="off"
+                                    >
+                                    <button type="button" class="paste-btn" id="pasteBtn" title="Dán link từ clipboard">
+                                        <i class="fas fa-paste"></i> Dán
+                                    </button>
+                                </div>
+                                <div class="hint-text">
+                                    ✓ <strong>Link gốc:</strong> https://shopee.vn/product/123/456<br>
+                                    ✓ <strong>Short link:</strong> https://s.shopee.vn/3B2qsVvyNN<br>
+                                    ✓ <strong>Redirect link:</strong> https://s.shopee.vn/an_redir?...
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary-custom btn-custom" id="submitBtn">
+                                <i class="fas fa-magic"></i>
+                                <span id="btnText">Tạo Link Ngay</span>
+                                <div class="spinner-border-custom"></div>
+                            </button>
+                        </form>
                     </div>
                 </div>
-            `;
 
-            $('#linksContainer').html(html);
-            $('#emptyState').hide();
-            $('#resultsSection').addClass('show');
-            $('#buyBtn').attr('href', data.affiliateLink);
+                <!-- Instructions -->
+                <div class="instructions-box" style="margin-top: 1.5rem;">
+                    <h6>
+                        <i class="fas fa-lightbulb" style="color: #ffc107;"></i> Cách Sử Dụng
+                    </h6>
+                    <ol>
+                        <li>
+                            <strong>Dán bất kỳ link Shopee nào:</strong>
+                            <ul>
+                                <li>Link sản phẩm thường</li>
+                                <li>Short link rút gọn (s.shopee.vn/...)</li>
+                                <li>Link affiliate cũ</li>
+                            </ul>
+                        </li>
+                        <li>System tự động <strong>giải mã & trích xuất</strong> link gốc</li>
+                        <li>Tạo <strong>link affiliate mới</strong> với affiliate ID & tham số của bạn</li>
+                        <li>Copy & <strong>chia sẻ</strong> link mới để kiếm tiền</li>
+                    </ol>
+                    <div style="margin-top: 1rem;">
+                        <span class="feature-badge"><i class="fas fa-star"></i> Giải mã tự động</span>
+                        <span class="feature-badge"><i class="fas fa-zap"></i> Cực nhanh</span>
+                        <span class="feature-badge"><i class="fas fa-lock"></i> An toàn</span>
+                    </div>
+                </div>
+            </div>
 
-            showToast(`✅ ${data.message}`);
+            <!-- Right Panel - Results -->
+            <div class="right-panel">
+                <!-- Alert Messages -->
+                <div id="errorAlert" class="alert-custom alert-danger-custom" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div id="errorMessage"></div>
+                </div>
 
-        } catch (error) {
-            console.error('Error:', error);
-            $('#errorAlert')
-                .html(`<strong><i class="fas fa-exclamation-circle"></i> Lỗi:</strong> ${error.message}`)
-                .show();
-            showToast(error.message, 'error');
-        } finally {
-            $('#submitBtn').prop('disabled', false);
-            $('#btnText').text('Tạo Link Ngay');
-            $('.spinner-border-custom').removeClass('show');
+                <!-- Results -->
+                <div id="resultsSection" class="results-section card-custom">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-check-circle"></i> Kết Quả
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div id="linksContainer"></div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a id="buyBtn" class="btn-action btn-success-action" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-shopping-cart"></i> Mua Ngay
+                            </a>
+                            <a id="shareBtn" class="btn-action btn-info-action" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-facebook"></i> Chia Sẻ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="card-custom">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <p>
+                            <strong>Tạo link để xem kết quả ở đây</strong><br>
+                            <small style="color: #adb5bd; margin-top: 0.5rem; display: block;">
+                                Link sẽ hiển thị ngay sau khi bạn nhập và nhấn "Tạo Link Ngay"
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>
+            🛍️ <strong>Shopee Affiliate Link Generator v1.0.5</strong> | 
+            Made with <i class="fas fa-heart" style="color: var(--danger);"></i> for Shopee users
+        </p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        // ========== Configuration ==========
+        let API_URL = '';
+
+        // ========== Initialize App ==========
+        async function initializeApp() {
+            try {
+                // Lấy config từ backend
+                const response = await fetch('/config');
+                const config = await response.json();
+                API_URL = config.apiUrl;
+                
+                console.log('✅ App initialized');
+                console.log('📡 API URL:', API_URL);
+                
+            } catch (error) {
+                console.error('❌ Failed to load config:', error);
+                API_URL = window.location.origin;
+            }
         }
-    });
-</script>
+
+        // Khởi tạo app khi trang load
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // ========== Toast Notification ==========
+        function showToast(message, type = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+        }
+
+        // ========== Copy to Clipboard ==========
+        function copyToClipboard(text) {
+            if (!text) {
+                showToast('Không có nội dung để copy', 'warning');
+                return;
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast('✅ Đã copy vào clipboard!'))
+                    .catch(() => showToast('❌ Copy thất bại', 'error'));
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy') 
+                        ? showToast('✅ Đã copy vào clipboard!')
+                        : showToast('❌ Copy thất bại', 'error');
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+        }
+
+        // ========== Paste from Clipboard ==========
+        $('#pasteBtn').on('click', function() {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.readText()
+                    .then(text => {
+                        if (text.trim()) {
+                            $('#shopeeUrl').val(text.trim());
+                            showToast('✅ Đã dán link từ clipboard');
+                            $('#shopeeUrl').focus();
+                        }
+                    })
+                    .catch(() => {
+                        $('#shopeeUrl').focus();
+                        showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+                    });
+            } else {
+                $('#shopeeUrl').focus();
+                showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
+            }
+        });
+
+        // ========== Form Submit ==========
+        $('#linkForm').on('submit', async function(e) {
+            e.preventDefault();
+
+            const shopeeUrl = $('#shopeeUrl').val().trim();
+
+            // ========== Validation ==========
+            if (!shopeeUrl) {
+                showToast('❌ Vui lòng nhập link Shopee', 'warning');
+                $('#shopeeUrl').focus();
+                return;
+            }
+
+            // Kiểm tra API_URL đã được load chưa
+            if (!API_URL) {
+                showToast('❌ Config chưa được load, vui lòng F5 để tải lại trang', 'error');
+                return;
+            }
+
+            // ========== Loading State ==========
+            $('#submitBtn').prop('disabled', true);
+            $('#btnText').text('Đang xử lý...');
+            $('.spinner-border-custom').addClass('show');
+            $('#errorAlert').hide();
+            $('#resultsSection').removeClass('show');
+            $('#emptyState').show();
+
+            try {
+                // ========== API Call ==========
+                const response = await fetch(
+                    `${API_URL}/create-link?origin_link=${encodeURIComponent(shopeeUrl)}`
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Có lỗi xảy ra');
+                }
+
+                // ========== Display Results ==========
+                let html = `
+                    <div class="link-box">
+                        <div class="link-box-header">
+                            <strong>
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                ✅ Link Affiliate Mới
+                            </strong>
+                        </div>
+                `;
+
+                // Hiển thị nếu giải mã từ short link
+                if (data.decodedFromShortLink) {
+                    html += `
+                        <div class="link-info" style="border-left-color: #2196F3;">
+                            <strong style="color: #2196F3;">
+                                <i class="fas fa-sync-alt"></i> Bước 1: Giải Mã Short Link
+                            </strong>
+                            <div style="margin-top: 0.75rem;">
+                                <small style="color: #666; display: block; margin-bottom: 0.35rem;">📥 Input (Short Link):</small>
+                                <code>${data.originalInput}</code>
+                            </div>
+                            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0;">
+                                <small style="color: #2196F3; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                                    <i class="fas fa-arrow-down"></i> Kết Quả Giải Mã
+                                </small>
+                                <small style="color: #666; display: block; margin-bottom: 0.35rem;">📌 Link Gốc:</small>
+                                <code>${data.originLink}</code>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Hiển thị Link Affiliate Mới
+                html += `
+                        <div class="link-info" style="border-left-color: var(--success); background: #f0fdf4;">
+                            <strong style="color: var(--success);">
+                                <i class="fas fa-link"></i> Bước ${data.decodedFromShortLink ? '2' : '1'}: Link Affiliate Mới
+                            </strong>
+                            <div class="link-content" id="affiliateLinkContent">${data.affiliateLink}</div>
+                        </div>
+
+                        <div class="params-info">
+                            <strong>
+                                <i class="fas fa-cogs"></i> Tham Số Sử Dụng
+                            </strong>
+                            <div class="params-row">
+                                <span class="params-label">🔑 Affiliate ID:</span>
+                                <span class="params-value">${data.affiliateId}</span>
+                            </div>
+                            <div class="params-row">
+                                <span class="params-label">📌 Sub ID:</span>
+                                <span class="params-value">${data.subId}</span>
+                            </div>
+                            <div class="params-row">
+                                <span class="params-label">📡 Share Channel:</span>
+                                <span class="params-value">${data.shareChannelCode}</span>
+                            </div>
+                        </div>
+
+                        <div class="link-box-actions">
+                            <button type="button" class="copy-btn" onclick="copyToClipboard('${data.affiliateLink}')">
+                                <i class="fas fa-copy"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                $('#linksContainer').html(html);
+                $('#emptyState').hide();
+                $('#resultsSection').addClass('show');
+                
+                // Update buttons
+                $('#buyBtn').attr('href', data.affiliateLink);
+                $('#shareBtn').attr('href', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(data.affiliateLink)}`);
+
+                showToast(`✅ ${data.message}`);
+
+            } catch (error) {
+                console.error('Error:', error);
+                
+                $('#errorMessage').html(`
+                    <strong><i class="fas fa-exclamation-circle"></i> ${error.message}</strong>
+                `);
+                $('#errorAlert').show();
+                
+                showToast(error.message, 'error');
+            } finally {
+                $('#submitBtn').prop('disabled', false);
+                $('#btnText').text('Tạo Link Ngay');
+                $('.spinner-border-custom').removeClass('show');
+            }
+        });
+
+        // ========== Keyboard Shortcut ==========
+        document.addEventListener('keydown', function(event) {
+            // Alt + Enter để submit form
+            if (event.altKey && event.key === 'Enter') {
+                $('#linkForm').submit();
+            }
+        });
+
+        // ========== Auto focus input ==========
+        $('#shopeeUrl').focus();
+    </script>
+</body>
+
+</html>
