@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 # ========== CONSTANTS ==========
-AFFILIATE_ID = "17323090153"
+AFFILIATE_ID = "173276543567"
 SUB_ID = "addlivetag-ductoan"
 SHARE_CHANNEL = "4"
 
