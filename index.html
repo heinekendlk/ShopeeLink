@@ -227,10 +227,6 @@
             margin-bottom: 1rem;
         }
 
-        .result-box:last-child {
-            margin-bottom: 0;
-        }
-
         .result-title {
             font-weight: 700;
             color: var(--primary);
@@ -273,36 +269,6 @@
         .copy-btn:hover {
             background: var(--secondary);
             transform: translateY(-2px);
-        }
-
-        .params-box {
-            background: #f0f5ff;
-            border-left: 4px solid #4b7bec;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-        }
-
-        .param-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .param-row:last-child {
-            border-bottom: none;
-        }
-
-        .param-label {
-            font-weight: 600;
-            color: #4b7bec;
-        }
-
-        .param-value {
-            color: #666;
-            font-family: 'Courier New', monospace;
         }
 
         /* ========== Alert ========== */
@@ -377,6 +343,16 @@
             color: #6c757d;
             font-size: 0.85rem;
             margin-top: 2rem;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
         }
 
         /* ========== Responsive ========== */
@@ -503,15 +479,15 @@
     </div>
 
     <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // ========== Config ==========
-        const API_URL = "https://shopee-affiliate-api-ymtu.onrender.com";  // ✅ Thêm dấu ngoặc kép
+        // ========== CONFIG ==========
+        const API_URL = "https://shopee-affiliate-api-ymtu.onrender.com";
 
         console.log('🌐 API_URL:', API_URL);
 
-        // ========== Toast Notification ==========
+        // ========== TOAST NOTIFICATION ==========
         function showToast(message, type = 'success') {
             Swal.fire({
                 toast: true,
@@ -528,7 +504,7 @@
             });
         }
 
-        // ========== Copy to Clipboard ==========
+        // ========== COPY TO CLIPBOARD ==========
         function copyToClipboard(text) {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -545,7 +521,7 @@
             }
         }
 
-        // ========== Paste Button ==========
+        // ========== PASTE BUTTON ==========
         document.getElementById('pasteBtn').addEventListener('click', () => {
             if (navigator.clipboard) {
                 navigator.clipboard.readText().then(text => {
@@ -564,7 +540,7 @@
             }
         });
 
-        // ========== Form Submit ==========
+        // ========== FORM SUBMIT ==========
         document.getElementById('linkForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -593,7 +569,7 @@
             document.getElementById('emptyState').style.display = 'block';
 
             try {
-                // ========== API Call ==========
+                // ========== API CALL ==========
                 const url = `${API_URL}/create-link?origin_link=${encodeURIComponent(link)}`;
                 console.log('🌐 Fetching:', url);
 
@@ -606,7 +582,6 @@
                 });
 
                 console.log('📥 Response status:', response.status);
-                console.log('📥 Response headers:', response.headers);
 
                 // Get response text first (for debugging)
                 const responseText = await response.text();
@@ -627,57 +602,21 @@
                     throw new Error(data.detail || `HTTP ${response.status}`);
                 }
 
-                // ========== Display Results ==========
+                // ========== DISPLAY RESULTS ==========
+                // Hiển thị chỉ Link Affiliate Mới - Ẩn các thành phần khác
                 let html = `
                     <div class="result-box">
                         <div class="result-title">
                             <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                            Kết Quả
+                            Link Affiliate Mới
                         </div>
-                `;
-
-                // If decoded from short link
-                if (data.decodedFromShort) {
-                    html += `
-                        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e9ecef;">
-                            <p style="font-size: 0.85rem; color: #666; margin: 0 0 0.5rem 0;">
-                                <strong style="color: #4b7bec;">📥 Input (Short Link):</strong>
-                            </p>
-                            <div class="result-content">${data.inputLink}</div>
-                        </div>
-                        <p style="font-size: 0.85rem; color: #666; margin: 0 0 0.5rem 0;">
-                            <strong style="color: var(--success);">📌 Link Gốc (Giải Mã):</strong>
-                        </p>
-                        <div class="result-content">${data.originLink}</div>
-                    `;
-                }
-
-                html += `
-                        <p style="font-size: 0.85rem; color: #666; margin: 1rem 0 0.5rem 0;">
-                            <strong style="color: var(--primary);">🔗 Link Affiliate Mới:</strong>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0.75rem 0 0.5rem 0;">
+                            <strong style="color: var(--primary);">🔗 Link của bạn:</strong>
                         </p>
                         <div class="result-content">${data.affiliateLink}</div>
                         <button type="button" class="copy-btn" onclick="copyToClipboard('${data.affiliateLink}')">
                             <i class="fas fa-copy"></i> Copy Link
                         </button>
-                    </div>
-
-                    <div class="params-box">
-                        <strong style="color: #4b7bec; display: block; margin-bottom: 0.75rem;">
-                            <i class="fas fa-cogs"></i> Tham Số
-                        </strong>
-                        <div class="param-row">
-                            <span class="param-label">Affiliate ID:</span>
-                            <span class="param-value">${data.affiliateId}</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label">Sub ID:</span>
-                            <span class="param-value">${data.subId}</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label">Share Channel:</span>
-                            <span class="param-value">${data.shareChannelCode}</span>
-                        </div>
                     </div>
                 `;
 
@@ -705,7 +644,7 @@
             }
         });
 
-        // ========== Auto focus ==========
+        // ========== AUTO FOCUS ==========
         window.addEventListener('load', () => {
             document.getElementById('linkInput').focus();
             console.log('✅ App loaded and focused');
