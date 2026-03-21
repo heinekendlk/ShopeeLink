@@ -14,6 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ========== Constants ==========
+FIXED_AFFILIATE_ID = "17323090153"
+FIXED_SUB_ID = "addlivetag-ductoan"
+
 # ============ Helper Functions ============
 
 def validate_shopee_url(url: str) -> bool:
@@ -62,16 +66,14 @@ def extract_product_id(url: str) -> tuple:
     return (None, None)
 
 
-def create_affiliate_link(
-    origin_link: str, 
-    affiliate_id: str, 
-    sub_id: str = "addlivetag"
-) -> str:
+def create_affiliate_link(origin_link: str) -> str:
     """
     Tạo Shopee affiliate link với redirect
     
     Format:
-    https://s.shopee.vn/an_redir?origin_link={encoded_link}&affiliate_id={id}&sub_id={sub_id}
+    https://s.shopee.vn/an_redir?origin_link={encoded_link}&affiliate_id=17323090153&sub_id=addlivetag-ductoan
+    
+    Affiliate ID và Sub ID đã được cố định
     """
     # Encode origin_link
     encoded_link = quote(origin_link, safe='')
@@ -79,8 +81,8 @@ def create_affiliate_link(
     affiliate_link = (
         f"https://s.shopee.vn/an_redir?"
         f"origin_link={encoded_link}"
-        f"&affiliate_id={affiliate_id}"
-        f"&sub_id={sub_id}"
+        f"&affiliate_id={FIXED_AFFILIATE_ID}"
+        f"&sub_id={FIXED_SUB_ID}"
     )
     
     return affiliate_link
@@ -89,35 +91,29 @@ def create_affiliate_link(
 # ============ API Endpoints ============
 
 @app.post("/create-link")
-async def create_link(
-    origin_link: str = Query(..., description="Link Shopee từ form (https://shopee.vn/...)"),
-    affiliate_ids: str = Query(..., description="Affiliate IDs (cách nhau bởi dấu phẩy)")
-):
+async def create_link(origin_link: str = Query(..., description="Link Shopee từ form")):
     """
-    Tạo affiliate links từ Shopee URL
+    Tạo affiliate link từ Shopee URL
     
     Parameters:
     - origin_link: Link sản phẩm Shopee gốc
-    - affiliate_ids: Danh sách affiliate ID (cách nhau bởi dấu phẩy)
     
     Response:
     {
         "success": true,
-        "message": "Đã tạo 2 link thành công",
-        "affiliateLinks": [
-            {
-                "affiliate_id": "17323090153",
-                "affiliate_link": "https://s.shopee.vn/an_redir?origin_link=https%3A%2F%2Fshopee.vn%2F...&affiliate_id=17323090153&sub_id=addlivetag"
-            }
-        ]
+        "message": "Đã tạo link thành công",
+        "affiliateLink": "https://s.shopee.vn/an_redir?origin_link=...&affiliate_id=17323090153&sub_id=addlivetag-ductoan",
+        "affiliateId": "17323090153",
+        "subId": "addlivetag-ductoan",
+        "productId": "67890"
     }
     """
     
     # ========== Validation ==========
-    if not origin_link or not affiliate_ids:
+    if not origin_link:
         raise HTTPException(
             status_code=400, 
-            detail="origin_link và affiliate_ids không được để trống"
+            detail="origin_link không được để trống"
         )
     
     origin_link = origin_link.strip()
@@ -129,7 +125,7 @@ async def create_link(
             detail="URL không phải từ Shopee. Vui lòng nhập link Shopee hợp lệ"
         )
     
-    # Extract product info (optional - chỉ để validate)
+    # Extract product info
     shop_id, product_id = extract_product_id(origin_link)
     if not product_id:
         raise HTTPException(
@@ -137,30 +133,18 @@ async def create_link(
             detail="Không thể lấy product ID từ URL. Vui lòng kiểm tra lại link"
         )
     
-    # Parse affiliate IDs
-    aff_ids = [aid.strip() for aid in affiliate_ids.split(",") if aid.strip()]
-    if not aff_ids:
-        raise HTTPException(
-            status_code=400, 
-            detail="Affiliate IDs không hợp lệ"
-        )
-    
-    # ========== Tạo Links ==========
-    affiliate_links = []
-    for aff_id in aff_ids:
-        affiliate_link = create_affiliate_link(origin_link, aff_id)
-        affiliate_links.append({
-            "affiliate_id": aff_id,
-            "affiliate_link": affiliate_link,
-            "short_link": affiliate_link[:50] + "..."  # For display
-        })
+    # ========== Tạo Link ==========
+    affiliate_link = create_affiliate_link(origin_link)
     
     return {
         "success": True,
-        "message": f"Đã tạo {len(affiliate_links)} link thành công",
-        "affiliateLinks": affiliate_links,
+        "message": "Đã tạo link thành công",
+        "affiliateLink": affiliate_link,
+        "affiliateId": FIXED_AFFILIATE_ID,
+        "subId": FIXED_SUB_ID,
         "productId": product_id,
-        "shopId": shop_id
+        "shopId": shop_id,
+        "originLink": origin_link
     }
 
 
@@ -209,7 +193,9 @@ async def health_check():
     return {
         "status": "ok",
         "service": "Shopee Affiliate Link Generator",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "affiliateId": FIXED_AFFILIATE_ID,
+        "subId": FIXED_SUB_ID
     }
 
 
