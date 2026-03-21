@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tạo link Shopee - buichung.shpee.cc</title>
+    <meta name="description" content="Công cụ tạo link Shopee nhanh chóng">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://platform-api.sharethis.com/js/sharethis.js#property=676aca77d5bedc001907e6b3&product=sticky-share-buttons" async></script>
+
+    <style>
+        :root {
+            --primary: #ee4d2d;
+            --secondary: #ff6b35;
+            --success: #26de81;
+            --info: #4b7bec;
+            --dark: #2f3542;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, rgb(255, 190, 166) 0%, rgb(255, 225, 219) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Layout chính - 2 cột trên desktop */
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+            align-items: start;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 1.5rem 0;
+            color: var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .domain-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(238, 77, 45, 0.1);
+            outline: none;
+        }
+
+        .input-group-text {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-left: none;
+            border-radius: 0 0.75rem 0.75rem 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--primary);
+        }
+
+        .input-group-text:hover {
+            background: #f8f9fa;
+            border-color: var(--primary);
+        }
+
+        .btn-custom {
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .btn-custom:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s;
+        }
+
+        .btn-custom:hover:before {
+            left: 100%;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary-custom:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(238, 77, 45, 0.35);
+        }
+
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success), #20bf6b);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-info-custom {
+            background: linear-gradient(135deg, var(--info), #3867d6);
+            color: white;
+            flex: 1;
+        }
+
+        .result-section {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-section.show {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-box {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            word-break: break-all;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .link-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .link-box-header strong {
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .spinner {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        .spinner.show {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .product-info-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: none;
+        }
+
+        .product-info-box.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .product-info-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .product-info-header h6 {
+            margin: 0;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            border: 2px solid #dee2e6;
+            margin-right: 1rem;
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+
+        .product-shop {
+            color: #6c757d;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .product-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .commission-badge {
+            background: linear-gradient(135deg, var(--success), #20bf6b);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            margin-top: 0.75rem;
+            font-weight: 600;
+        }
+
+        .commission-badge .label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .commission-badge .amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .instructions-box {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .instructions-box h6 {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .instructions-box ol {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .instructions-box li {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #495057;
+            line-height: 1.5;
+        }
+
+        .instructions-box a {
+            display: inline-block;
+            margin-top: 0.75rem;
+        }
+
+        .instructions-image {
+            max-width: 100%;
+            margin-top: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Responsive - chuyển sang 1 cột trên mobile */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0.75rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-content {
+                padding: 1rem;
+            }
+
+            .product-image {
+                width: 70px;
+                height: 70px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons .btn-custom {
+                flex: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-wrapper">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-link mr-2"></i>Tạo Link Shopee</h1>
+            <div class="domain-badge">fb.buichung.com</div>
+        </div>
+
+        <!-- Left Panel - Form Input -->
+        <div class="left-panel">
+            <div class="main-card">
+                <div class="card-content">
+                    <form id="link-form">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-shopping-bag mr-2"></i>Link Sản Phẩm Shopee
+                            </label>
+                            <div class="input-group">
+                                <input type="url"
+                                    class="form-control"
+                                    id="input_url"
+                                    placeholder="Dán link Shopee vào đây..."
+                                    required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="btnPaste" title="Dán link từ clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom btn-custom" id="btnSubmit">
+                            <i class="fas fa-magic mr-2"></i>
+                            <span class="btn-text">Tạo Link Ngay</span>
+                            <div class="spinner"></div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions Box -->
+            <div class="instructions-box">
+                <h6>
+                    <i class="fas fa-lightbulb text-warning mr-2"></i>Cách Sử Dụng
+                </h6>
+                <ol>
+                    <li>Dán link Shopee ở ô trên</li>
+                    <li>Nhấn <strong>Tạo Link Ngay</strong></li>
+                    <li>Copy link và chia sẻ</li>
+                </ol>
+                <a href="https://www.facebook.com/groups/yeumagiamgia/posts/2088085601983895/" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="fab fa-facebook mr-2"></i>Xem Hướng Dẫn Chi Tiết
+                </a>
+                <img src="https://upanh.nhatkythuthuat.com/images/2026/02/24/image.png" alt="image hướng dẫn" class="instructions-image">
+            </div>
+        </div>
+
+        <!-- Right Panel - Results -->
+        <div class="right-panel">
+            <div id="result-section" class="result-section">
+                <!-- Links Container -->
+                <div class="main-card">
+                    <div class="card-content">
+                        <div style="margin-bottom: 1rem;">
+                            <h6 style="color: var(--dark); font-weight: 700; margin-bottom: 1rem;">
+                                <i class="fas fa-check-circle text-success mr-2"></i>Các Link Của Bạn
+                            </h6>
+                            <div id="affiliate-links-container"></div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a class="btn btn-success-custom btn-custom" id="btnBuy" href="#" target="_blank">
+                                <i class="fas fa-shopping-cart mr-2"></i>Mua Ngay
+                            </a>
+                            <a class="btn btn-info-custom btn-custom" id="btnShare" href="https://www.facebook.com/groups/yeumagiamgia/posts/2088085601983895/" target="_blank">
+                                <i class="fab fa-facebook mr-2"></i>Chia Sẻ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info Box -->
+                <div id="product-info-box" class="product-info-box main-card">
+                    <div class="card-content">
+                        <div class="product-info-header">
+                            <h6><i class="fas fa-box text-primary mr-2"></i>Thông Tin Sản Phẩm</h6>
+                        </div>
+                        <div id="product-info-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="main-card" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; color: #dee2e6; margin-bottom: 1rem;">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <p style="color: #6c757d; margin: 0;">
+                    Tạo link để xem kết quả ở đây
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+
+        function showToast(msg, icon = 'success') {
+            Toast.fire({ icon, title: msg });
+        }
+
+        function copyToClipboard(text) {
+            if (!text) {
+                showToast('Không có nội dung để copy', 'info');
+                return;
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast('Đã copy!'))
+                    .catch(() => showToast('Copy thất bại', 'error'));
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                try {
+                    document.execCommand('copy') ? showToast('Đã copy!') : showToast('Copy thất bại', 'error');
+                } finally {
+                    document.body.removeChild(temp);
+                }
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+        }
+
+        function displayProductInfo(productInfo) {
+            if (!productInfo) {
+                $('#product-info-box').removeClass('show');
+                return;
+            }
+
+            const html = `
+                <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                    ${productInfo.imageUrl ? `<img src="${productInfo.imageUrl}" alt="${productInfo.productName || ''}" class="product-image">` : ''}
+                    <div class="product-details">
+                        <div class="product-name">${productInfo.productName || 'N/A'}</div>
+                        <div class="product-shop"><i class="fas fa-store mr-1"></i>${productInfo.shopName || 'N/A'}</div>
+                        <div class="product-price">${formatCurrency(productInfo.price || 0)}</div>
+                    </div>
+                </div>
+                <div class="product-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Đã bán</div>
+                        <div class="stat-value">${(productInfo.sales || 0).toLocaleString('vi-VN')}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Đánh giá</div>
+                        <div class="stat-value">${productInfo.rating || 'N/A'} <i class="fas fa-star text-warning"></i></div>
+                    </div>
+                </div>
+                ${productInfo.expected_commission ? `
+                <div class="commission-badge">
+                    <div class="label">Hoa hồng dự kiến</div>
+                    <div class="amount">${formatCurrency(productInfo.expected_commission)}</div>
+                </div>
+                ` : ''}
+            `;
+
+            $('#product-info-content').html(html);
+            $('#product-info-box').addClass('show');
+        }
+
+        // ...existing code...
+        $('#btnPaste').on('click', function() {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.readText()
+                    .then(text => {
+                        if (text) {
+                            $('#input_url').val(text.trim());
+                            showToast('Đã dán link!');
+                            setTimeout(() => {
+                                $('#link-form').submit();
+                            }, 300);
+                        }
+                    })
+                    .catch(() => {
+                        $('#input_url').focus();
+                        showToast('Vui lòng dán bằng Ctrl+V', 'info');
+                    });
+            } else {
+                $('#input_url').focus();
+                showToast('Vui lòng dán bằng Ctrl+V', 'info');
+            }
+        });
+
+        $('#link-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const url = $('#input_url').val().trim();
+            if (!url) {
+                showToast('Vui lòng nhập link Shopee!', 'warning');
+                return;
+            }
+
+            try {
+                new URL(url);
+            } catch (e) {
+                showToast('Link không hợp lệ!', 'error');
+                return;
+            }
+
+            $('#btnSubmit').prop('disabled', true);
+            $('.btn-text').text('Đang xử lý...');
+            $('.spinner').addClass('show');
+            $('#result-section').removeClass('show');
+            $('#empty-state').show();
+
+            const affiliateIds = ["17323090153","17375990033"];
+            const linkLabels = ["Link 1 mã 22% tối đa 500K\/50K toàn sàn","Link 2 mã 20% tối đa 250K\/50K toàn sàn"];
+
+            if (!affiliateIds || affiliateIds.length === 0) {
+                $('#btnSubmit').prop('disabled', false);
+                $('.btn-text').text('Tạo Link Ngay');
+                $('.spinner').removeClass('show');
+                showToast('Chưa cấu hình affiliate ID!', 'error');
+                return;
+            }
+
+            const apiUrl = `?url=${encodeURIComponent(url)}&affiliate_ids=${encodeURIComponent(affiliateIds.join(','))}`;
+
+            $.ajax({
+                url: apiUrl,
+                method: 'GET',
+                dataType: 'json',
+                timeout: 30000,
+                success: function(response) {
+                    $('#btnSubmit').prop('disabled', false);
+                    $('.btn-text').text('Tạo Link Ngay');
+                    $('.spinner').removeClass('show');
+
+                    if (response.success && response.affiliateLinks && response.affiliateLinks.length > 0) {
+                        $('#affiliate-links-container').empty();
+                        $('#empty-state').hide();
+
+                        response.affiliateLinks.forEach(function(linkData, index) {
+                            const escapedLink = $('<div>').text(linkData.affiliate_link).html();
+                            let linkLabelText = 'Link ' + (index + 1);
+                            if (linkLabels && linkLabels.length > index && linkLabels[index] && linkLabels[index].trim() !== '') {
+                                linkLabelText = linkLabels[index];
+                            }
+                            const escapedLabel = $('<div>').text(linkLabelText).html();
+
+                            const linkBoxHtml = `
+                                <div class="link-box">
+                                    <div class="link-box-header">
+                                        <strong><i class="fas fa-check-circle text-success mr-2"></i>${escapedLabel}</strong>
+                                        <button class="copy-btn" data-link="${escapedLink}">
+                                            <i class="fas fa-copy mr-1"></i>Copy
+                                        </button>
+                                    </div>
+                                    <div>${escapedLink}</div>
+                                </div>
+                            `;
+                            $('#affiliate-links-container').append(linkBoxHtml);
+                        });
+
+                        if (response.affiliateLinks.length > 0) {
+                            $('#btnBuy').attr('href', response.affiliateLinks[0].affiliate_link);
+                        }
+
+                        $('#result-section').addClass('show');
+                        showToast('Tạo ' + response.affiliateLinks.length + ' link thành công!');
+
+                        if (response.productInfo) {
+                            displayProductInfo(response.productInfo);
+                        } else {
+                            $('#product-info-box').removeClass('show');
+                        }
+                    } else {
+                        showToast(response.message || 'Có lỗi xảy ra!', 'error');
+                    }
+                },
+                error: function() {
+                    $('#btnSubmit').prop('disabled', false);
+                    $('.btn-text').text('Tạo Link Ngay');
+                    $('.spinner').removeClass('show');
+                    showToast('Có lỗi xảy ra!', 'error');
+                }
+            });
+        });
+
+        $(document).on('click', '.copy-btn', function() {
+            const link = $(this).data('link');
+            copyToClipboard(link);
+        });
+    </script>
+
+    
+</body>
+
+</html>
