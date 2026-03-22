@@ -314,7 +314,9 @@ async def create_link(origin_link: str = Query(..., description="Shopee URL, sho
         # ========== STEP 7: Create Affiliate Link ==========
         logger.info(f"🔗 Creating affiliate link from: {final_origin_link}")
         affiliate_link_1 = create_affiliate_link(final_origin_link, AFFILIATE_ID)
-        affiliate_link_2 = create_affiliate_link(final_origin_link, AFFILIATE_ID_2)
+        affiliate_link_2 = None
+        if AFFILIATE_ID_2 and AFFILIATE_ID_2.strip():
+            affiliate_link_2 = create_affiliate_link(final_origin_link, AFFILIATE_ID_2)
         logger.info(f"✅ Affiliate links created successfully")
         
         # ========== STEP 8: Prepare Response ==========
