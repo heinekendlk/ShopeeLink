@@ -280,7 +280,7 @@ async def create_link(origin_link: str = Query(..., description="Shopee URL, sho
         
         # ========== STEP 5: Check and Decode SHORT LINK ==========
         elif is_short_link(origin_link):
-            logger.info(f"🔄 Short link detected - Starting decode process...")
+            logger.info(f"🔄 Short link (s.shopee/vn.shp.ee) detected - Starting decode process...")
             decoded_from_short = True
             
             decoded = await decode_short_link(origin_link)
