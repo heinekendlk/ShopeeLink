@@ -6,6 +6,24 @@ import re
 import aiohttp
 import logging
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+origins = [
+    "https://fb.teamduckien.com, https://teamduckien.com",
+    # "http://localhost:5500", # Bỏ comment dòng này nếu muốn test ở máy cá nhân
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, # Chỉ cho phép danh sách trên
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # ========== LOGGING SETUP ==========
 logging.basicConfig(
     level=logging.INFO,
