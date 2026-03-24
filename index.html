@@ -330,6 +330,7 @@
             text-align: center;
             padding: 3rem 1.5rem;
             color: #6c757d;
+            display: none
         }
 
         .empty-state-icon {
@@ -602,7 +603,7 @@
             spinner.classList.add('show');
             document.getElementById('alertBox').style.display = 'none';
             document.getElementById('resultsSection').classList.remove('show');
-            document.getElementById('emptyState').style.display = 'block';
+            //document.getElementById('emptyState').style.display = 'block'; Không hiện frontend
 
             try {
                 // ========== API CALL ==========
