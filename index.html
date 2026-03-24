@@ -553,8 +553,9 @@
                 navigator.clipboard.readText().then(text => {
                     if (text.trim()) {
                         document.getElementById('linkInput').value = text.trim();
-                        showToast('✅ Đã dán link');
-                        document.getElementById('linkInput').focus();
+                        showToast('✅ Đã dán & Đang xử lý...');
+                        // Tự động submit sau khi dán từ nút
+                        document.getElementById('linkForm').dispatchEvent(new Event('submit'));
                     }
                 }).catch(() => {
                     showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
@@ -564,6 +565,15 @@
                 showToast('ℹ️ Vui lòng dán bằng Ctrl+V', 'info');
                 document.getElementById('linkInput').focus();
             }
+        });
+        // ========== AUTO SUBMIT ON PASTE (Input Event) ==========
+        document.getElementById('linkInput').addEventListener('paste', (e) => {
+            // Sử dụng setTimeout để chờ giá trị được điền vào input
+            setTimeout(() => {
+                if (document.getElementById('linkInput').value.trim()) {
+                    document.getElementById('linkForm').dispatchEvent(new Event('submit'));
+                }
+            }, 100); 
         });
 
         // ========== FORM SUBMIT ==========
