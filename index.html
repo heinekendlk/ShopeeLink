@@ -342,9 +342,6 @@
             margin-bottom: 1rem;
         }
 
-                    margin-bottom: 1rem;
-        }
-
         /* ========== iOS Install Prompt ========== */
         .ios-prompt {
             display: none;
@@ -783,7 +780,9 @@
 
         window.addEventListener('load', () => {
             // Detect iOS
-            const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            // Cập nhật: Kiểm tra thêm iPadOS (thường nhận diện là MacIntel với touch points > 1)
+            const isIos = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) || 
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             // Check if in standalone mode (already installed)
             const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
             
