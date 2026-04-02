@@ -284,7 +284,8 @@
         .result-content {
             background: white;
             border-radius: 0.5rem;
-            padding: 0.75rem;
+            padding: 0.6rem 0.75rem; /* Giữ padding cơ bản */
+            padding-right: 85px; /* Tạo khoảng trống cho nút Copy */
             word-break: break-all;
             font-family: 'Courier New', monospace;
             font-size: 0.8rem;
@@ -293,22 +294,39 @@
             max-height: 120px;
             overflow-y: auto;
             line-height: 1.5;
+            position: relative; /* Thiết lập ngữ cảnh định vị cho nút absolute */
+            /* Loại bỏ các thuộc tính flex vì nút sẽ được định vị tuyệt đối */
+            /* display: flex; */
+            /* justify-content: space-between; */
+            /* align-items: flex-start; */
+            /* gap: 10px; */
+        }
+
+        .result-link-text {
+            word-break: break-all;
+            /* flex: 1; */ /* Không cần thiết khi nút là absolute */
         }
 
         .copy-btn {
             background: var(--primary);
+            position: absolute; /* Định vị tuyệt đối */
+            top: 5px; /* Cách lề trên 5px */
+            right: 5px; /* Cách lề phải 5px */
+            z-index: 1; /* Đảm bảo nút nằm trên nội dung */
             color: white;
             border: none;
             border-radius: 0.5rem;
-            padding: 0.65rem 1.25rem;
-            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem; /* Giảm padding để nút nhỏ hơn */
+            font-size: 0.7rem; /* Giảm cỡ chữ */
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
+            gap: 0.3rem; /* Giảm khoảng cách giữa icon và chữ */
+            /* Loại bỏ các thuộc tính flex và margin không cần thiết */
+            /* margin-top: 0.75rem; */
+            /* flex-shrink: 0; */
         }
 
         .copy-btn:hover {
